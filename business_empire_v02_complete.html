@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business Empire v0.2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#0b0f14;color:#fff}
+.container{max-width:760px;margin:auto;padding:18px}.screen{display:none}.active{display:block}
+.card{background:#151b23;border:1px solid #303a46;border-radius:18px;padding:20px;margin-top:16px}
+h1{font-size:36px;margin:8px 0}h2{margin-top:0}h3{margin:6px 0}
+button{width:100%;padding:15px;margin-top:10px;border-radius:11px;border:none;background:#fff;color:#000;font-size:16px;font-weight:bold}
+.choice{background:#1d2631;color:#fff;border:1px solid #3a4654;text-align:left}.choice.selected{border:2px solid #4ade80}
+input,select{width:100%;padding:13px;margin-top:7px;border-radius:10px;border:1px solid #3a4654;background:#0d131a;color:#fff;font-size:16px}
+label{display:block;margin-top:15px;color:#b9c3cf}.stat{background:#0d131a;padding:13px;border-radius:11px;margin-top:9px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.small{font-size:13px;color:#9aa6b2}.good{color:#4ade80}.bad{color:#fb7185}
+.item{background:#0d131a;border:1px solid #303a46;padding:13px;border-radius:11px;margin-top:9px}
+hr{border:0;border-top:1px solid #303a46;margin:18px 0}
+</style>
+</head>
+<body><div class="container">
+
+<div id="start" class="screen active"><div class="card" style="text-align:center">
+<p>BUSINESS SIMULATOR</p><h1>BUSINESS EMPIRE</h1>
+<p>Start with $10,000.<br>Build a company. Make decisions. Make money.</p>
+<button onclick="go('setup')">START BUSINESS</button></div></div>
+
+<div id="setup" class="screen"><h1>Create Your Company</h1><div class="card">
+<label>Company Name</label><input id="companyName" placeholder="Example: Mellow">
+<label>Choose Your Business</label>
+<button class="choice" onclick="choose('clothing',this)">👕 Clothing Brand</button>
+<button class="choice" onclick="choose('shoes',this)">👟 Shoe Company</button>
+<button class="choice" onclick="choose('cars',this)">🚗 Car Dealership</button>
+<button class="choice" onclick="choose('restaurant',this)">🍔 Restaurant</button>
+<button class="choice" onclick="choose('carwash',this)">🚿 Car Wash</button>
+<button class="choice" onclick="choose('tech',this)">💻 Tech Company</button>
+<button onclick="createCompany()">CONTINUE →</button></div></div>
+
+<div id="product" class="screen"><h1 id="buildTitle"></h1><div class="card">
+<label>Product / Service Name</label><input id="productName">
+<label>Price ($)</label><input id="price" type="number">
+<label>Product Quality</label><select id="quality"><option value="1">Basic</option><option value="2">Decent</option><option value="3" selected>Standard</option><option value="4">Premium</option><option value="5">Elite</option></select>
+<label>Starting Marketing Budget ($/week)</label><input id="marketing" type="number" value="500">
+<button onclick="launch()">LAUNCH COMPANY 🚀</button></div></div>
+
+<div id="dashboard" class="screen"><h1 id="companyTitle"></h1>
+<div class="grid">
+<div class="stat">💰 Cash<h2 id="cash">$10,000</h2></div><div class="stat">📊 Valuation<h2 id="valuation">$10,000</h2></div>
+<div class="stat">📈 Revenue<h2 id="revenue">$0</h2></div><div class="stat">💵 Profit<h2 id="profit">$0</h2></div>
+<div class="stat">👥 Customers<h2 id="customers">0</h2></div><div class="stat">⭐ Reputation<h2 id="rep">50 / 100</h2></div>
+<div class="stat">📦 Inventory<h2 id="inventory">0</h2></div><div class="stat">📅 Week<h2 id="week">1</h2></div>
+</div>
+
+<div class="card"><h2>Weekly Strategy</h2>
+<label>Price ($)</label><input id="dashPrice" type="number">
+<label>Marketing Budget ($)</label><input id="dashMarketing" type="number">
+<label>Production / Stock Order</label><input id="stockOrder" type="number" value="100">
+<button onclick="runWeek()">RUN NEXT WEEK →</button><div id="event"></div></div>
+
+<div class="card"><h2>👔 Employees</h2>
+<p class="small">Employees affect demand, costs and reputation. Wages are paid weekly.</p>
+<div class="item"><b>Salesperson</b><br><span class="small">+8% customers each • $250/week</span><button onclick="hire('sales')">HIRE</button></div>
+<div class="item"><b>Marketer</b><br><span class="small">+10% marketing effectiveness each • $300/week</span><button onclick="hire('marketing')">HIRE</button></div>
+<div class="item"><b>Operations Worker</b><br><span class="small">−4% unit cost each • $275/week</span><button onclick="hire('ops')">HIRE</button></div>
+<div class="item"><b>Manager</b><br><span class="small">+5% customers and reputation • $500/week</span><button onclick="hire('manager')">HIRE</button></div>
+<div id="employees"></div></div>
+
+<div class="card"><h2>📦 Inventory & Supplier</h2>
+<p class="small" id="supplierInfo"></p>
+<label>Supplier</label><select id="supplier" onchange="updateSupplier()"></select>
+<div id="supplierDetails"></div>
+<button onclick="buyStock()">BUY STOCK NOW</button></div>
+
+<div class="card"><h2>📣 Marketing Campaigns</h2>
+<p class="small">Choose how your marketing budget is spent.</p>
+<select id="campaign"><option value="balanced">Balanced — normal</option><option value="social">Social Media — +15% demand, +5% reputation</option><option value="influencer">Influencer — +25% demand, more expensive</option><option value="local">Local — +8% demand, +8% reputation</option></select>
+</div>
+
+<div class="card"><h2>👥 Customer Market</h2><div id="customersPanel"></div></div>
+
+<div class="card"><h2>🏢 Competition</h2><div id="competition"></div></div>
+
+<div class="card"><h2>🏦 Financing</h2>
+<p class="small">Loans provide cash immediately but require weekly payments.</p>
+<button onclick="takeLoan(5000)">TAKE $5,000 LOAN</button>
+<button onclick="takeLoan(15000)">TAKE $15,000 LOAN</button>
+<div id="loans"></div></div>
+
+<div class="card"><h2>💾 Save / Load</h2>
+<button onclick="saveGame()">SAVE GAME</button><button onclick="loadGame()">LOAD GAME</button>
+<p class="small">Save uses your browser's local storage on this device.</p></div>
+
+<div class="card"><h2>📜 Business Log</h2><div id="log">Your company has launched.</div></div>
+</div></div>
+
+<script>
+const businesses={
+clothing:{product:"Hoodie",cost:25,demand:100,normal:60,unit:true},
+shoes:{product:"Sneakers",cost:40,demand:70,normal:90,unit:true},
+cars:{product:"Car",cost:20000,demand:3,normal:27000,unit:true},
+restaurant:{product:"Meal",cost:8,demand:180,normal:22,unit:true},
+carwash:{product:"Wash",cost:4,demand:220,normal:18,unit:false},
+tech:{product:"Device",cost:120,demand:40,normal:250,unit:true}};
+const suppliers={
+standard:{name:"Standard Supplier",mult:1,quality:0},
+discount:{name:"Discount Supplier",mult:.86,quality:-1},
+premium:{name:"Premium Supplier",mult:1.16,quality:1}};
+const marketNames=["Value Seekers","Everyday Buyers","Premium Buyers"];
+let game={company:"",type:"",product:"",price:0,quality:3,marketing:500,cash:10000,revenue:0,profit:0,customers:0,reputation:50,week:1,inventory:0,supplier:"standard",employees:{sales:0,marketing:0,ops:0,manager:0},loans:[],customerMix:[.4,.4,.2],valuation:10000};
+
+function go(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active")}
+function choose(t,b){game.type=t;document.querySelectorAll(".choice").forEach(x=>x.classList.remove("selected"));b.classList.add("selected")}
+function createCompany(){
+let n=document.getElementById("companyName").value.trim();if(!n)return alert("Enter a company name.");if(!game.type)return alert("Choose a business.");
+game.company=n;let b=businesses[game.type];document.getElementById("buildTitle").innerText="Build "+n;document.getElementById("productName").value=b.product;document.getElementById("price").value=b.normal;go("product")}
+function launch(){
+game.product=document.getElementById("productName").value.trim()||businesses[game.type].product;game.price=+document.getElementById("price").value;game.quality=+document.getElementById("quality").value;game.marketing=+document.getElementById("marketing").value;
+document.getElementById("companyTitle").innerText=game.company;document.getElementById("dashPrice").value=game.price;document.getElementById("dashMarketing").value=game.marketing;setupUI();update();go("dashboard")}
+function totalEmployees(){return Object.values(game.employees).reduce((a,b)=>a+b,0)}
+function wages(){return game.employees.sales*250+game.employees.marketing*300+game.employees.ops*275+game.employees.manager*500}
+function hire(t){let cost={sales:250,marketing:300,ops:275,manager:500}[t];if(game.cash<cost)return alert("Not enough cash.");game.cash-=cost;game.employees[t]++;addLog("Hired a "+t+" employee. First week's wage: "+money(cost)+".");update()}
+function updateSupplier(){
+let s=suppliers[document.getElementById("supplier").value];document.getElementById("supplierDetails").innerHTML="<p class='small'>Unit cost multiplier: "+s.mult+"× • Quality effect: "+(s.quality>=0?"+":"")+s.quality+"</p>"}
+function setupUI(){
+let sel=document.getElementById("supplier");sel.innerHTML=Object.entries(suppliers).map(([k,s])=>`<option value="${k}">${s.name}</option>`).join("");sel.value=game.supplier;updateSupplier();
+document.getElementById("supplierInfo").innerText=businesses[game.type].unit?"Stock is required before most products can be sold.":"Supplies are ordered automatically for service businesses.";
+}
+function buyStock(){
+let amount=Math.max(0,Math.floor(+document.getElementById("stockOrder").value||0)),s=suppliers[document.getElementById("supplier").value],b=businesses[game.type],cost=amount*b.cost*s.mult;
+if(game.cash<cost)return alert("Not enough cash.");game.cash-=cost;game.inventory+=amount;game.supplier=document.getElementById("supplier").value;addLog("Bought "+amount+" units of inventory for "+money(cost)+".");update()}
+function runWeek(){
+game.price=Math.max(0,+document.getElementById("dashPrice").value);game.marketing=Math.max(0,+document.getElementById("dashMarketing").value);
+let b=businesses[game.type],s=suppliers[game.supplier],priceRatio=game.price/b.normal;
+let priceEffect=Math.max(.2,1-Math.abs(priceRatio-1)*.8),qualityEffect=.7+game.quality*.1;
+let marketingEffect=1+Math.min(game.marketing/3000,.8)+game.employees.marketing*.1;
+let campaign=document.getElementById("campaign").value;
+let camp={balanced:[1,0],social:[1.15,2],influencer:[1.25,-1],local:[1.08,3]}[campaign];
+let repEffect=.7+game.reputation/150,employeeBoost=1+game.employees.sales*.08+game.employees.manager*.05;
+let demand=b.demand*priceEffect*qualityEffect*marketingEffect*camp[0]*repEffect*employeeBoost;
+let competitorFactor=.82+Math.random()*.28;
+demand*=competitorFactor;
+let potential=Math.max(0,Math.round(demand*(.88+Math.random()*.24)));
+let customers=potential;
+let productionCost=0;
+if(b.unit){customers=Math.min(customers,game.inventory);productionCost=customers*b.cost*s.mult;game.inventory-=customers}
+else productionCost=customers*b.cost;
+let revenue=customers*game.price,marketing=game.marketing,employeeWages=wages(),loanPay=0;
+game.loans.forEach(l=>{let pay=Math.min(l.payment,l.balance);l.balance-=pay;loanPay+=pay});
+game.loans=game.loans.filter(l=>l.balance>0);
+let expenses=productionCost+marketing+employeeWages+loanPay,profit=revenue-expenses;
+game.customers=customers;game.revenue+=revenue;game.profit+=profit;game.cash+=profit;game.week++;
+if(profit>0)game.reputation=Math.min(100,game.reputation+1+game.employees.manager*.03+camp[1]*.25);else game.reputation=Math.max(0,game.reputation-2);
+game.customerMix=[Math.max(0,.5-priceRatio*.15),.3,.2];game.customerMix[1]=1-game.customerMix[0]-game.customerMix[2];
+game.valuation=Math.max(0,Math.round(game.cash+game.revenue*.35+game.reputation*100));
+addLog(profit>=0?`Week ${game.week-1}: ${customers} customers, ${money(revenue)} revenue, ${money(profit)} profit.`:`Week ${game.week-1}: You lost ${money(Math.abs(profit))}.`);
+document.getElementById("event").innerHTML=`<p>Revenue: ${money(revenue)}<br>Product/service costs: ${money(productionCost)}<br>Marketing: ${money(marketing)}<br>Employee wages: ${money(employeeWages)}<br>Loan payments: ${money(loanPay)}<br><b>Profit: ${money(profit)}</b></p>`;
+update()}
+function takeLoan(amount){
+if(game.loans.length>=3)return alert("Maximum of 3 active loans.");let total=amount*1.12,payment=Math.ceil(total/20);game.cash+=amount;game.loans.push({amount,balance:total,payment});addLog("Took a "+money(amount)+" business loan.");update()}
+function saveGame(){localStorage.setItem("businessEmpireSave",JSON.stringify(game));alert("Game saved on this device.")}
+function loadGame(){let x=localStorage.getItem("businessEmpireSave");if(!x)return alert("No saved game found.");game=JSON.parse(x);document.getElementById("companyTitle").innerText=game.company;document.getElementById("dashPrice").value=game.price;document.getElementById("dashMarketing").value=game.marketing;setupUI();update();go("dashboard");addLog("Saved game loaded.")}
+function addLog(x){document.getElementById("log").innerHTML="<p>"+x+"</p>"+document.getElementById("log").innerHTML}
+function update(){
+document.getElementById("cash").innerText=money(game.cash);document.getElementById("valuation").innerText=money(game.valuation);
+document.getElementById("revenue").innerText=money(game.revenue);document.getElementById("profit").innerText=money(game.profit);
+document.getElementById("customers").innerText=game.customers;document.getElementById("rep").innerText=Math.round(game.reputation)+" / 100";
+document.getElementById("inventory").innerText=game.inventory;document.getElementById("week").innerText=game.week;
+document.getElementById("employees").innerHTML="<p class='small'>Sales: "+game.employees.sales+" • Marketing: "+game.employees.marketing+" • Operations: "+game.employees.ops+" • Managers: "+game.employees.manager+"<br>Weekly wages: "+money(wages())+"</p>";
+document.getElementById("customersPanel").innerHTML=marketNames.map((n,i)=>"<div class='item'><b>"+n+"</b><br>"+Math.round(game.customerMix[i]*100)+"% of your current customer mix</div>").join("");
+document.getElementById("competition").innerHTML="<p class='small'>Competitors are simulated each week. Their strength affects how much demand reaches your company.</p><p>Current market pressure: <b>"+(game.reputation>=70?"Low":"Moderate")+"</b></p>";
+document.getElementById("loans").innerHTML=game.loans.length?game.loans.map((l,i)=>"<div class='item'>Loan "+(i+1)+": "+money(l.balance)+" remaining<br>Weekly payment: "+money(l.payment)+"</div>").join(""):"<p class='small'>No active loans.</p>"}
+function money(n){return "$"+Math.round(n).toLocaleString()}
+</script></body></html>
