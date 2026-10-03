@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business Empire</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b0f14;
+  color: white;
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 25px;
+}
+
+.screen {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+.card {
+  background: #151b23;
+  border: 1px solid #303a46;
+  border-radius: 18px;
+  padding: 25px;
+  margin-top: 20px;
+}
+
+h1 {
+  font-size: 38px;
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: none;
+  background: #ffffff;
+  color: #000;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+button:active {
+  transform: scale(.98);
+}
+
+.choice {
+  background: #1d2631;
+  color: white;
+  border: 1px solid #3a4654;
+  text-align: left;
+}
+
+.choice.selected {
+  border: 2px solid #4ade80;
+}
+
+input, select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px;
+  margin-top: 8px;
+  border-radius: 10px;
+  border: 1px solid #3a4654;
+  background: #0d131a;
+  color: white;
+  font-size: 16px;
+}
+
+label {
+  display: block;
+  margin-top: 20px;
+  color: #b9c3cf;
+}
+
+.stat {
+  background: #0d131a;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.green {
+  color: #4ade80;
+}
+
+.red {
+  color: #fb7185;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- START -->
+<div id="start" class="screen active">
+  <div class="card" style="text-align:center">
+    <p>BUSINESS SIMULATOR</p>
+    <h1>BUSINESS EMPIRE</h1>
+
+    <p>
+      Start with $10,000.<br>
+      Build a company. Make decisions. Make money.
+    </p>
+
+    <button onclick="goToSetup()">START BUSINESS</button>
+  </div>
+</div>
+
+
+<!-- BUSINESS SETUP -->
+<div id="setup" class="screen">
+
+  <h1>Create Your Company</h1>
+
+  <div class="card">
+
+    <label>Company Name</label>
+    <input id="companyName" placeholder="Example: Mellow">
+
+    <label>Choose Your Business</label>
+
+    <button class="choice" onclick="chooseBusiness('clothing', this)">
+      👕 Clothing Brand
+    </button>
+
+    <button class="choice" onclick="chooseBusiness('shoes', this)">
+      👟 Shoe Company
+    </button>
+
+    <button class="choice" onclick="chooseBusiness('cars', this)">
+      🚗 Car Dealership
+    </button>
+
+    <button class="choice" onclick="chooseBusiness('restaurant', this)">
+      🍔 Restaurant
+    </button>
+
+    <button class="choice" onclick="chooseBusiness('carwash', this)">
+      🚿 Car Wash
+    </button>
+
+    <button class="choice" onclick="chooseBusiness('tech', this)">
+      💻 Tech Company
+    </button>
+
+    <button onclick="createCompany()">
+      CONTINUE →
+    </button>
+
+  </div>
+</div>
+
+
+<!-- PRODUCT -->
+<div id="product" class="screen">
+
+  <h1 id="productTitle"></h1>
+
+  <div class="card">
+
+    <label>Product / Service Name</label>
+    <input id="productName">
+
+    <label>Price ($)</label>
+    <input id="price" type="number" value="50">
+
+    <label>Product Quality</label>
+    <select id="quality">
+      <option value="1">Basic</option>
+      <option value="2">Decent</option>
+      <option value="3" selected>Standard</option>
+      <option value="4">Premium</option>
+      <option value="5">Elite</option>
+    </select>
+
+    <label>Weekly Marketing Budget ($)</label>
+    <input id="marketing" type="number" value="500">
+
+    <button onclick="launchBusiness()">
+      LAUNCH COMPANY 🚀
+    </button>
+
+  </div>
+</div>
+
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="screen">
+
+  <h1 id="companyTitle"></h1>
+
+  <div class="card">
+
+    <div class="stat">
+      💰 Cash
+      <h2 id="cash">$10,000</h2>
+    </div>
+
+    <div class="stat">
+      📈 Revenue
+      <h2 id="revenue">$0</h2>
+    </div>
+
+    <div class="stat">
+      💵 Total Profit
+      <h2 id="profit">$0</h2>
+    </div>
+
+    <div class="stat">
+      👥 Customers This Week
+      <h2 id="customers">0</h2>
+    </div>
+
+    <div class="stat">
+      ⭐ Reputation
+      <h2 id="reputation">50 / 100</h2>
+    </div>
+
+    <div class="stat">
+      📅 Week
+      <h2 id="week">1</h2>
+    </div>
+
+  </div>
+
+
+  <div class="card">
+
+    <h2>Weekly Strategy</h2>
+
+    <label>Product Price ($)</label>
+    <input id="dashPrice" type="number">
+
+    <label>Marketing Budget ($)</label>
+    <input id="dashMarketing" type="number">
+
+    <button onclick="runWeek()">
+      RUN NEXT WEEK →
+    </button>
+
+    <div id="event"></div>
+
+  </div>
+
+
+  <div class="card">
+
+    <h2>Business Log</h2>
+
+    <div id="log">
+      Your company has launched.
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+
+
+<script>
+
+let game = {
+  company: "",
+  type: "",
+  product: "",
+  price: 0,
+  quality: 3,
+  marketing: 0,
+  cash: 10000,
+  revenue: 0,
+  profit: 0,
+  customers: 0,
+  reputation: 50,
+  week: 1
+};
+
+
+const businesses = {
+
+  clothing: {
+    name: "Clothing Brand",
+    product: "Hoodie",
+    cost: 25,
+    demand: 100,
+    normalPrice: 60
+  },
+
+  shoes: {
+    name: "Shoe Company",
+    product: "Sneakers",
+    cost: 40,
+    demand: 70,
+    normalPrice: 90
+  },
+
+  cars: {
+    name: "Car Dealership",
+    product: "Car",
+    cost: 20000,
+    demand: 3,
+    normalPrice: 27000
+  },
+
+  restaurant: {
+    name: "Restaurant",
+    product: "Meal",
+    cost: 8,
+    demand: 180,
+    normalPrice: 22
+  },
+
+  carwash: {
+    name: "Car Wash",
+    product: "Wash",
+    cost: 4,
+    demand: 220,
+    normalPrice: 18
+  },
+
+  tech: {
+    name: "Tech Company",
+    product: "Device",
+    cost: 120,
+    demand: 40,
+    normalPrice: 250
+  }
+
+};
+
+
+function showScreen(id) {
+
+  document.querySelectorAll(".screen").forEach(function(screen) {
+    screen.classList.remove("active");
+  });
+
+  document.getElementById(id).classList.add("active");
+}
+
+
+function goToSetup() {
+
+  showScreen("setup");
+
+}
+
+
+function chooseBusiness(type, button) {
+
+  game.type = type;
+
+  document.querySelectorAll(".choice").forEach(function(btn) {
+    btn.classList.remove("selected");
+  });
+
+  button.classList.add("selected");
+
+}
+
+
+function createCompany() {
+
+  let name = document.getElementById("companyName").value.trim();
+
+  if (name === "") {
+    alert("Enter a company name.");
+    return;
+  }
+
+  if (game.type === "") {
+    alert("Choose a business.");
+    return;
+  }
+
+  game.company = name;
+
+  let business = businesses[game.type];
+
+  document.getElementById("productTitle").innerText =
+    "Build " + game.company;
+
+  document.getElementById("productName").value =
+    business.product;
+
+  document.getElementById("price").value =
+    business.normalPrice;
+
+  showScreen("product");
+
+}
+
+
+function launchBusiness() {
+
+  game.product =
+    document.getElementById("productName").value;
+
+  game.price =
+    Number(document.getElementById("price").value);
+
+  game.quality =
+    Number(document.getElementById("quality").value);
+
+  game.marketing =
+    Number(document.getElementById("marketing").value);
+
+  document.getElementById("companyTitle").innerText =
+    game.company;
+
+  document.getElementById("dashPrice").value =
+    game.price;
+
+  document.getElementById("dashMarketing").value =
+    game.marketing;
+
+  updateDashboard();
+
+  showScreen("dashboard");
+
+}
+
+
+function runWeek() {
+
+  game.price =
+    Number(document.getElementById("dashPrice").value);
+
+  game.marketing =
+    Number(document.getElementById("dashMarketing").value);
+
+  let business = businesses[game.type];
+
+  let priceRatio =
+    game.price / business.normalPrice;
+
+  let priceEffect =
+    Math.max(0.2, 1 - Math.abs(priceRatio - 1) * 0.8);
+
+  let qualityEffect =
+    0.7 + game.quality * 0.1;
+
+  let marketingEffect =
+    1 + Math.min(game.marketing / 3000, 0.8);
+
+  let reputationEffect =
+    0.7 + game.reputation / 150;
+
+  let demand =
+    business.demand *
+    priceEffect *
+    qualityEffect *
+    marketingEffect *
+    reputationEffect;
+
+  let customers =
+    Math.max(
+      0,
+      Math.round(
+        demand * (0.85 + Math.random() * 0.3)
+      )
+    );
+
+  let revenue =
+    customers * game.price;
+
+  let productionCost =
+    customers * business.cost;
+
+  let totalExpenses =
+    productionCost + game.marketing;
+
+  let profit =
+    revenue - totalExpenses;
+
+  game.customers = customers;
+
+  game.revenue += revenue;
+
+  game.profit += profit;
+
+  game.cash += profit;
+
+  game.week++;
+
+  if (profit > 0) {
+    game.reputation =
+      Math.min(100, game.reputation + 1);
+  } else {
+    game.reputation =
+      Math.max(0, game.reputation - 2);
+  }
+
+
+  let message;
+
+  if (profit >= 0) {
+
+    message =
+      "Week " + (game.week - 1) +
+      ": You served " + customers +
+      " customers and made " +
+      money(profit) + " profit.";
+
+  } else {
+
+    message =
+      "Week " + (game.week - 1) +
+      ": You lost " +
+      money(Math.abs(profit)) +
+      " this week.";
+
+  }
+
+
+  document.getElementById("log").innerHTML =
+    "<p>" + message + "</p>" +
+    document.getElementById("log").innerHTML;
+
+  document.getElementById("event").innerHTML =
+    "<p>" +
+    "Revenue: " + money(revenue) +
+    "<br>Expenses: " + money(totalExpenses) +
+    "<br>Profit: " + money(profit) +
+    "</p>";
+
+  updateDashboard();
+
+}
+
+
+function updateDashboard() {
+
+  document.getElementById("cash").innerText =
+    money(game.cash);
+
+  document.getElementById("revenue").innerText =
+    money(game.revenue);
+
+  document.getElementById("profit").innerText =
+    money(game.profit);
+
+  document.getElementById("customers").innerText =
+    game.customers;
+
+  document.getElementById("reputation").innerText =
+    Math.round(game.reputation) + " / 100";
+
+  document.getElementById("week").innerText =
+    game.week;
+
+}
+
+
+function money(number) {
+
+  return "$" +
+    Math.round(number).toLocaleString();
+
+}
+
+</script>
+
+</body>
+</html>
